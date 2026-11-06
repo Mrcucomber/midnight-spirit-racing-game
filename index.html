@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#05070d" />
+<title>午夜之魂 · MIDNIGHT SPIRIT</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+  <canvas id="game" aria-label="午夜之魂赛车游戏画面"></canvas>
+  <div class="fx fx-scanlines"></div>
+  <div class="fx fx-vignette"></div>
+  <div id="fatal" role="alert"></div>
+
+  <!-- ======================= 主菜单 ======================= -->
+  <section id="menu" class="screen menu-screen">
+    <div class="menu-topline">
+      <span><i class="live-dot"></i> TOKYO BAY // WANGAN LINE</span>
+      <span>00:00 AM&nbsp;&nbsp;/&nbsp;&nbsp;DRY&nbsp;&nbsp;/&nbsp;&nbsp;8.0 KM</span>
+    </div>
+
+    <div class="menu-main">
+      <div class="menu-title">
+        <div class="kicker"><span></span> MIDNIGHT HIGHWAY BATTLE</div>
+        <h1>午夜<span>之魂</span></h1>
+        <div class="en-title">MIDNIGHT <b>SPIRIT</b></div>
+        <p class="lede">凌晨零点，首都高湾岸线。<br />传说中那台黑色跑车，又在后视镜里出现了。</p>
+
+        <div class="menu-actions">
+          <button id="btnStart" class="btn primary" type="button">
+            <span class="btn-label">点火出战</span><span class="btn-key">ENTER</span>
+          </button>
+          <button id="btnHelp" class="btn ghost" type="button">如何驾驶</button>
+        </div>
+
+        <div id="helpPanel" class="help-panel">
+          <button id="btnHelpClose" class="help-close" type="button" aria-label="关闭说明">×</button>
+          <div class="help-grid">
+            <div><kbd>W</kbd><kbd>↑</kbd><span>油门</span></div>
+            <div><kbd>S</kbd><kbd>↓</kbd><span>刹车</span></div>
+            <div><kbd>A</kbd><kbd>D</kbd><span>转向</span></div>
+            <div><kbd>SPACE</kbd><span>氮气加速</span></div>
+            <div><kbd>ESC</kbd><span>暂停</span></div>
+            <div><kbd>M</kbd><span>静音</span></div>
+          </div>
+          <p>目标：率先跑完 <b>8.0 KM</b>，或在贴身缠斗中把对手的 <b>SP</b> 压到零。贴着对手的尾灯行驶会削减它的 SP；被对手咬住时，你的 SP 也会流失。撞车、刮墙同样会损失 SP。</p>
+        </div>
+      </div>
+
+      <aside class="menu-side">
+        <div class="side-card record-card">
+          <div class="micro">PERSONAL BEST</div>
+          <div id="bestTime" class="record-time">--:--.---</div>
+          <div class="record-sub">WANGAN 8.0KM · 单人夜战</div>
+        </div>
+
+        <div class="side-card machine-card">
+          <div class="micro">YOUR MACHINE</div>
+          <div class="machine-name" id="menuCarName">ZERO-Z</div>
+          <div class="machine-sub" id="menuCarSub">S30 · 3.1L TWIN TURBO</div>
+          <div class="machine-line"><i></i><span id="menuCarClass">BALANCED</span></div>
+          <div class="car-dots" id="menuCarDots"></div>
+        </div>
+
+        <div class="rival-note">
+          <div class="rival-mark">B</div>
+          <div><div class="micro">TARGET RIVAL</div><b>BLACKWING</b><span>“湾岸的黑色幽灵”</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="menu-footer">
+      <span>▲▼ 选择战车</span><span>WASD / 方向键 驾驶</span><span>SPACE 氮气</span><span>M 静音</span>
+    </div>
+    <div class="vertical-jp">首都高湾岸線<br />午前零時</div>
+  </section>
+
+  <!-- ======================= 秘密菜单 / 追走战车库 ======================= -->
+  <section id="secretMenu" class="screen secret-screen hidden" role="dialog" aria-modal="true" aria-labelledby="secretTitle">
+    <div class="secret-card">
+      <div class="secret-watermark" id="secretWatermark">Z</div>
+      <div class="secret-topline">
+        <span><i></i> SECRET UNLOCKED</span>
+        <span>WANGAN MIDNIGHT // CHASE PROTOCOL</span>
+      </div>
+
+      <div class="secret-main">
+        <div class="secret-preview-wrap">
+          <canvas id="secretPreview" width="700" height="430"></canvas>
+          <div class="secret-preview-tag" id="secretPreviewTag">NISSAN S30 · DEVIL Z</div>
+          <div class="secret-car-options" id="secretCarOptions">
+            <button class="secret-car-option active" data-secret-car="0" type="button">
+              <span>01</span><b>DEVIL Z</b><i>NISSAN S30</i>
+            </button>
+            <button class="secret-car-option" data-secret-car="1" type="button">
+              <span>02</span><b>BLACKWING</b><i>PORSCHE 911</i>
+            </button>
+          </div>
+        </div>
+
+        <div class="secret-copy">
+          <div class="micro">SPECIAL MENU // CHASE PROTOCOL</div>
+          <h2 id="secretTitle">DEVIL <span>Z</span></h2>
+          <p id="secretDesc">被诅咒的蓝色 S30。三升直六双涡轮，湾岸夜战的起点。</p>
+          <div class="secret-mods">
+            <div><span>追走对手</span><b id="secretRival">BLACKWING</b></div>
+            <div><span>关卡</span><b class="hot">4.0 KM 追走战</b></div>
+            <button id="btnTrafficCollision" class="secret-mod-toggle" type="button" role="switch" aria-checked="false">
+              <span>其他车辆碰撞箱</span>
+              <b id="secretCollisionState">关闭 / OFF</b>
+              <i class="toggle-track"><em></em></i>
+            </button>
+            <div><span>精神值</span><b class="hot">锁定</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="secret-actions">
+        <button id="btnSecretRace" class="btn primary wide" type="button">
+          <span class="btn-label">开始追走战</span><span class="btn-key">SECRET RUN</span>
+        </button>
+        <button id="btnSecretClose" class="btn ghost" type="button">退出秘密模式</button>
+      </div>
+
+      <div class="secret-footer"><span>THE GHOST IS YOU.</span><span>WANGAN MIDNIGHT</span></div>
+    </div>
+  </section>
+
+  <!-- ======================= 车库 ======================= -->
+  <section id="garage" class="screen garage-screen hidden">
+    <header class="garage-head">
+      <button id="btnBack" class="btn small ghost" type="button">← 返回</button>
+      <div class="garage-heading">
+        <div class="micro">MIDNIGHT GARAGE</div>
+        <h2>选择战车</h2>
+      </div>
+      <div class="rival-tag"><span>TARGET</span><b>BLACKWING</b></div>
+    </header>
+
+    <div class="garage-body">
+      <div class="preview-wrap">
+        <div class="preview-glow"></div>
+        <canvas id="carPreview" width="1000" height="560"></canvas>
+        <div class="preview-floor"></div>
+        <div class="preview-tag" id="previewTag">S30 / TWIN TURBO</div>
+        <div class="preview-vertical">湾岸仕様</div>
+        <button id="btnCarPrev" class="car-nav prev" type="button" aria-label="上一辆车">‹</button>
+        <button id="btnCarNext" class="car-nav next" type="button" aria-label="下一辆车">›</button>
+      </div>
+
+      <div class="car-detail">
+        <div class="car-index" id="carIndex">01 / 03</div>
+        <h2 id="carName">ZERO-Z</h2>
+        <div class="car-sub" id="carSub">S30 · 3.1L TWIN TURBO</div>
+        <p class="car-desc" id="carDesc"></p>
+
+        <div class="stats">
+          <div class="stat">
+            <label>极速 <span>TOP SPEED</span></label>
+            <div class="bar"><i id="statSpeed"></i></div>
+            <b id="statSpeedVal">315</b>
+          </div>
+          <div class="stat">
+            <label>加速 <span>ACCELERATION</span></label>
+            <div class="bar"><i id="statAccel"></i></div>
+            <b id="statAccelVal">8.4</b>
+          </div>
+          <div class="stat">
+            <label>操控 <span>HANDLING</span></label>
+            <div class="bar"><i id="statGrip"></i></div>
+            <b id="statGripVal">B+</b>
+          </div>
+        </div>
+
+        <div class="special" id="carSpecial">
+          <span>SPECIAL</span><p>高转速 twin turbo，出弯后程凶猛。</p>
+        </div>
+
+        <button id="btnRace" class="btn primary wide" type="button">
+          <span class="btn-label">驶入湾岸</span><span class="btn-key">START</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="car-cards" id="carCards"></div>
+    <div class="garage-foot">◀ ▶ 或 A / D 切换战车　·　ENTER 出战　·　ESC 返回</div>
+  </section>
+
+  <!-- ======================= 比赛 HUD ======================= -->
+  <section id="hud" class="hud hidden">
+    <div class="hud-top">
+      <div class="sp-block">
+        <div class="sp-head"><span>SPIRIT GAUGE</span><span id="spBattleTag" class="battle-tag">SP BATTLE</span></div>
+        <div class="sp-row you">
+          <span class="who">YOU</span>
+          <div class="sp-bar"><i id="playerSpBar"></i></div>
+          <b id="playerSpText">1000</b>
+        </div>
+        <div class="sp-row rival">
+          <span class="who" id="rivalShort">BLACKWING</span>
+          <div class="sp-bar"><i id="rivalSpBar"></i></div>
+          <b id="rivalSpText">1000</b>
+        </div>
+      </div>
+
+      <div class="progress-block">
+        <div class="zone-row">
+          <span id="zoneJp">湾岸線</span><b id="zoneName">BAYSIDE</b>
+        </div>
+        <div class="progress-track">
+          <i class="progress-fill" id="progressFill"></i>
+          <span id="playerPin" class="pin player"></span>
+          <span id="rivalPin" class="pin rival"></span>
+          <span class="finish-flag"></span>
+        </div>
+        <div class="progress-meta"><span id="gapText">差距 0 m</span><span id="positionText">P1 / 2</span></div>
+      </div>
+
+      <div class="meta-block">
+        <div class="timer" id="raceTimer">00:00.000</div>
+        <div class="meta-row"><span>剩余</span><b id="remainDist">8.00 km</b></div>
+        <div class="meta-row"><span>最高速</span><b id="topSpeedHud">0 km/h</b></div>
+      </div>
+    </div>
+
+    <div id="storyBox" class="story-box" aria-live="polite">
+      <div class="story-meta">
+        <span id="storyKicker">追走战 // CHASE BATTLE</span>
+        <span id="storyChapter">01 / 06</span>
+      </div>
+      <div class="story-speaker"><i></i><b id="storySpeaker">BLACKWING</b><em id="storyYou">YOU</em></div>
+      <div class="story-text" id="storyText"></div>
+    </div>
+
+    <div id="centerMessage" class="center-message">
+      <div class="msg-kicker" id="msgKicker">WANGAN LINE</div>
+      <div class="msg-title" id="msgTitle"></div>
+      <div class="msg-sub" id="msgSub"></div>
+    </div>
+
+    <div id="popupLayer" class="popup-layer"></div>
+    <div id="battleGlow" class="battle-glow"></div>
+
+    <div class="hud-bottom">
+      <div class="bottom-left">
+        <div class="car-badge" id="hudCarName">ZERO-Z</div>
+        <div class="combo" id="comboHud"><span>NEAR MISS</span><b id="comboVal">0</b></div>
+      </div>
+
+      <div class="nitro-block">
+        <div class="nitro-head"><span>NITRO</span><b id="nitroPct">100%</b></div>
+        <div class="nitro-segments" id="nitroSegments"></div>
+        <div class="nitro-hint">SPACE / N₂O</div>
+      </div>
+
+      <div class="speedo">
+        <div class="rpm-track"><i id="rpmFill"></i><span class="redline"></span></div>
+        <div class="speed-row"><b id="speedVal">0</b><span>km/h</span></div>
+        <div class="gear-row"><span>GEAR</span><b id="gearVal">1</b><span id="shiftHint">AUTO</span></div>
+      </div>
+    </div>
+
+    <div class="hud-bottomline">
+      <span id="zoneFlavor">TOKYO BAY SHORE</span>
+      <span>ESC 暂停　·　M 静音</span>
+    </div>
+
+    <div id="touchControls" class="touch-controls">
+      <div class="touch-steer">
+        <button type="button" data-touch="left" aria-label="左转">◀</button>
+        <button type="button" data-touch="right" aria-label="右转">▶</button>
+      </div>
+      <div class="touch-pedals">
+        <button type="button" data-touch="brake" aria-label="刹车">BRAKE</button>
+        <button type="button" data-touch="nitro" aria-label="氮气">N₂O</button>
+        <button type="button" data-touch="throttle" aria-label="油门">GAS</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 暂停 ======================= -->
+  <section id="pause" class="screen pause-screen hidden">
+    <div class="pause-card">
+      <div class="micro">WANGAN LINE // PAUSED</div>
+      <h2>暂时收油</h2>
+      <p>比赛计时已暂停。</p>
+      <div class="modal-actions">
+        <button id="btnResume" class="btn primary" type="button">继续比赛</button>
+        <button id="btnRestartPause" class="btn ghost" type="button">重新开始</button>
+        <button id="btnQuitPause" class="btn ghost" type="button">返回车库</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 结算 ======================= -->
+  <section id="result" class="screen result-screen hidden">
+    <div class="result-wrap">
+      <div class="result-kicker" id="resultKicker">WANGAN BATTLE // FINISH</div>
+      <h1 id="resultTitle" class="win">WIN</h1>
+      <div class="result-sub" id="resultSub">你让湾岸记住了这道尾灯。</div>
+
+      <div class="result-grid">
+        <div><span>总用时</span><b id="resTime">00:00.000</b></div>
+        <div><span>最高速度</span><b id="resTopSpeed">0 km/h</b></div>
+        <div><span>行驶距离</span><b id="resDistance">0.00 KM</b></div>
+        <div><span>贴身超车</span><b id="resNearMiss">0</b></div>
+        <div><span>碰撞次数</span><b id="resHits">0</b></div>
+        <div><span>剩余 SP</span><b id="resSp">0</b></div>
+      </div>
+
+      <div class="grade-line">
+        <span>RACE GRADE</span><b id="resGrade">A</b>
+        <span id="resRecord" class="new-record">NEW RECORD</span>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btnAgain" class="btn primary" type="button">再跑一次 <span class="btn-key">R</span></button>
+        <button id="btnGarage" class="btn ghost" type="button">返回车库</button>
+        <button id="btnMenu" class="btn ghost" type="button">主菜单</button>
+      </div>
+    </div>
+  </section>
+
+  <button id="btnMute" class="mute-btn" type="button" title="静音 (M)" aria-label="静音">♪</button>
+  <div id="rotateHint" class="rotate-hint"><span>↻</span> 横屏体验更佳</div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

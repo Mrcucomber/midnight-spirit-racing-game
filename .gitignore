@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Local logs and tooling
+*.log
+node_modules/
+.edge-*/
+.verify-*/
+runtime_tmp/
+
+# Local archives
+*.zip
