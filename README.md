@@ -95,15 +95,17 @@
 
 ```text
 midnight-spirit/
-├─ index.html           页面与界面结构
-├─ styles.css           视觉样式 / HUD / 移动端适配
-├─ game.js              路线、物理、AI、渲染、音频、流程
-├─ 启动游戏.bat         Windows 一键启动
+├─ index.html            页面与界面结构
+├─ styles.css            视觉样式 / HUD / 移动端适配
+├─ game.js               路线、物理、AI、渲染、音频、流程
+├─ 启动游戏.bat          Windows 一键启动
 ├─ README.md
 ├─ .gitignore
 ├─ .gitattributes
-├─ .nojekyll            GitHub Pages 静态站点标记
-└─ screenshots/         游戏截图
+├─ .nojekyll             GitHub Pages 静态站点标记
+├─ .github/workflows/
+│  └─ pages.yml          GitHub Actions 自动部署工作流
+└─ screenshots/          游戏截图
 ```
 
 ## 发布到 GitHub
@@ -116,7 +118,7 @@ git init
 git add .
 git commit -m "feat: Midnight Spirit 2D racing game"
 git branch -M main
-git remote add origin https://github.com/<你的用户名>/midnight-spirit.git
+git remote add origin https://github.com/<你的用户名>/midnight-spirit-racing-game.git
 git push -u origin main
 ```
 
@@ -129,15 +131,20 @@ git config --global user.email "你的邮箱"
 
 ### 方式二：直接上传
 
-在 GitHub 新建仓库后，把 `midnight-spirit` 文件夹里的全部文件拖入上传，注意保留 `screenshots/` 目录。
+在 GitHub 新建仓库后，把 `midnight-spirit` 文件夹里的全部文件拖入上传，注意保留 `screenshots/` 目录和 `.github/workflows/pages.yml`。
 
 ### 开启 GitHub Pages
 
-仓库 **Settings → Pages → Build and deployment**：
+本仓库包含自动部署工作流 `.github/workflows/pages.yml`：
 
-- Source 选择 `Deploy from a branch`
-- Branch 选择 `main`，目录选择 `/(root)`
-- 保存后访问 `https://<你的用户名>.github.io/midnight-spirit/`
+1. 进入 **Settings → Pages → Build and deployment**
+2. Source 选择 **GitHub Actions**
+3. 每次推送到 `main` 后，Actions 会自动运行 `Deploy static game to GitHub Pages`
+4. 首次部署成功后访问：
+
+```text
+https://<你的用户名>.github.io/midnight-spirit-racing-game/
+```
 
 游戏全部路径都是相对路径，可直接运行在 GitHub Pages 上。
 
