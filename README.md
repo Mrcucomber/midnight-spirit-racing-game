@@ -100,6 +100,7 @@ midnight-spirit/
 ├─ game.js               路线、物理、AI、渲染、音频、流程
 ├─ 启动游戏.bat          Windows 一键启动
 ├─ README.md
+├─ LICENSE                MIT 许可证
 ├─ .gitignore
 ├─ .gitattributes
 ├─ .nojekyll             GitHub Pages 静态站点标记
@@ -154,4 +155,5 @@ https://<你的用户名>.github.io/midnight-spirit-racing-game/
 - 作品中出现的《湾岸 Midnight》、**DEVIL Z**、**BLACKWING** 及角色名称等，权利归原作者楠みちはる及相关权利方所有。
 - 本项目未使用原作漫画、动画、游戏的美术、音频或代码素材；画面、程序音频与代码均为本项目原创实现。
 - 剧情对话为原创致敬文本，并非漫画 / 动画原文引用。
-- 当前仓库未附带开源许可证（LICENSE）。发布前请根据自己的意愿选择许可证；如果不希望他人复用，请保留默认的 All rights reserved。
+- 本项目原创代码与画面采用 **MIT License**，版权归 **Mrcucomber** 所有，详情见 [LICENSE](LICENSE)。
+- MIT 许可证仅适用于本项目原创的代码与画面；《湾岸 Midnight》相关名称、角色与车辆设定不在此授权范围内，相关权利仍归其各自权利方所有。
