@@ -289,6 +289,7 @@ const touchState = { up: false, down: false, left: false, right: false, nitro: f
 
 const UI = {};
 function cacheUI() {
+  const missing = [];
   [
     'menu', 'garage', 'hud', 'pause', 'result', 'secretMenu', 'fatal',
     'btnStart', 'btnHelp', 'helpPanel', 'btnHelpClose', 'bestTime', 'menuCarName', 'menuCarSub', 'menuCarClass', 'menuCarDots',
@@ -306,7 +307,11 @@ function cacheUI() {
     'btnResume', 'btnRestartPause', 'btnQuitPause', 'btnAgain', 'btnGarage', 'btnMenu', 'btnMute',
     'resultKicker', 'resultTitle', 'resultSub', 'resTime', 'resTopSpeed', 'resDistance', 'resNearMiss',
     'resHits', 'resSp', 'resGrade', 'resRecord', 'toast', 'rotateHint'
-  ].forEach(id => { UI[id] = document.getElementById(id); });
+  ].forEach(id => {
+    UI[id] = document.getElementById(id);
+    if (!UI[id]) missing.push(id);
+  });
+  if (missing.length) console.warn('[Midnight Spirit] missing UI elements:', missing.join(', '));
 }
 
 /* ----------------------------- 天际线生成 ----------------------------- */
@@ -1519,11 +1524,23 @@ function popup(text, cls = '') {
 }
 
 let toastTimer = null;
+function ensureToast() {
+  if (UI.toast) return UI.toast;
+  const host = document.getElementById('app') || document.body;
+  UI.toast = document.createElement('div');
+  UI.toast.id = 'toast';
+  UI.toast.className = 'toast';
+  UI.toast.setAttribute('role', 'status');
+  UI.toast.setAttribute('aria-live', 'polite');
+  host.appendChild(UI.toast);
+  return UI.toast;
+}
 function toast(text) {
-  UI.toast.textContent = text;
-  UI.toast.classList.add('on');
+  const el = ensureToast();
+  el.textContent = text;
+  el.classList.add('on');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => UI.toast.classList.remove('on'), 1500);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 1500);
 }
 
 /* ----------------------------- 成绩存档 ----------------------------- */
