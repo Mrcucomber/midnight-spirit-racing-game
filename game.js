@@ -114,6 +114,15 @@ const DEVIL_Z_DEF = {
 
 const SECRET_CARS = [DEVIL_Z_DEF, RIVAL_DEF];
 const SECRET_CHASE_LEN = 4000;
+const SLIPSTREAM = {
+  near: 5,
+  far: 48,
+  lateral: 2.35,
+  minSpeed: 35,
+  topSpeedGain: 0.034,
+  accelGain: 3.8,
+  nitroGain: 2.2
+};
 
 // 原创致敬台词：不直接引用漫画/动画原文。
 const CHASE_STORY = {
@@ -302,7 +311,8 @@ function cacheUI() {
     'btnRace', 'carCards', 'btnCarPrev', 'btnCarNext', 'spBattleTag', 'playerSpBar', 'playerSpText', 'rivalShort', 'rivalSpBar', 'rivalSpText',
     'zoneJp', 'zoneName', 'progressFill', 'playerPin', 'rivalPin', 'gapText', 'positionText',
     'raceTimer', 'remainDist', 'topSpeedHud', 'centerMessage', 'msgKicker', 'msgTitle', 'msgSub',
-    'popupLayer', 'battleGlow', 'hudCarName', 'comboHud', 'comboVal', 'nitroSegments', 'nitroPct',
+    'popupLayer', 'battleGlow', 'draftGlow', 'hudCarName', 'comboHud', 'comboVal', 'nitroSegments', 'nitroPct',
+    'draftHud', 'draftFill',
     'rpmFill', 'speedVal', 'gearVal', 'shiftHint', 'touchControls', 'zoneFlavor',
     'btnResume', 'btnRestartPause', 'btnQuitPause', 'btnAgain', 'btnGarage', 'btnMenu', 'btnMute',
     'resultKicker', 'resultTitle', 'resultSub', 'resTime', 'resTopSpeed', 'resDistance', 'resNearMiss',
@@ -819,6 +829,9 @@ function createRace(carDef, rivalDef = RIVAL_DEF) {
     camYaw: 0,
     battle: 0,
     gap: 0,
+    draft: 0,
+    draftWas: false,
+    draftMsgCd: 0,
     msgTimer: 0,
     zone: zoneAt(player.s),
     zoneChanged: 0,
@@ -869,6 +882,10 @@ function startRace(carIndex = selectedCar) {
   UI.zoneFlavor.textContent = zoneAt(race.player.s).flavor;
   UI.comboHud.classList.remove('on');
   UI.battleGlow.classList.remove('on');
+  UI.draftGlow.classList.remove('on');
+  UI.draftHud.classList.remove('on');
+  UI.draftHud.setAttribute('aria-hidden', 'true');
+  UI.draftFill.style.width = '0%';
   UI.spBattleTag.classList.remove('on');
   UI.centerMessage.className = 'center-message';
   UI.progressFill.style.width = '0%';
@@ -1096,11 +1113,13 @@ function updatePlayer(dt) {
     p.s += p.speed * dt;
     p.x += p.steer * 3.2 * dt;
   } else if (!r.over) {
-    let maxV = topV * (usingNitro ? 1.095 : 1);
+    const draft = r.secret ? (r.draft || 0) : 0;
+    let maxV = topV * (usingNitro ? 1.095 : 1) * (1 + draft * SLIPSTREAM.topSpeedGain);
     if (inputThrottle) {
       const ratio = clamp(p.speed / maxV, 0, 1);
       let a = p.def.accel * 12.8 * (1 - Math.pow(ratio, 1.55)) + 0.55;
       if (usingNitro) a *= 1.48;
+      a += SLIPSTREAM.accelGain * draft;
       p.speed += a * dt;
     } else {
       p.speed -= (0.32 + p.speed * 0.007) * dt;
@@ -1121,7 +1140,7 @@ function updatePlayer(dt) {
     if (usingNitro) {
       p.nitro = Math.max(0, p.nitro - 24 * dt);
     } else {
-      p.nitro = Math.min(100, p.nitro + 1.75 * dt);
+      p.nitro = Math.min(100, p.nitro + (1.75 + draft * SLIPSTREAM.nitroGain) * dt);
     }
 
     if (Math.abs(p.x) > 6.95) {
@@ -1245,6 +1264,33 @@ function updateRival(dt) {
   rv.rpm = guide.rpm;
 }
 
+function updateDraft(dt) {
+  const r = race;
+  if (!r) return;
+  const p = r.player, rv = r.rival;
+  r.draftMsgCd = Math.max(0, r.draftMsgCd - dt);
+  let target = 0;
+  if (r.secret && r.started && !r.over && !r.rivalFinished) {
+    const gap = rv.s - p.s;
+    const dx = Math.abs(p.x - rv.x);
+    if (gap > SLIPSTREAM.near && gap < SLIPSTREAM.far &&
+        dx < SLIPSTREAM.lateral && p.speed > SLIPSTREAM.minSpeed && rv.speed > 22) {
+      const depth = clamp(1 - (gap - SLIPSTREAM.near) / (SLIPSTREAM.far - SLIPSTREAM.near), 0, 1);
+      const line = clamp(1 - dx / SLIPSTREAM.lateral, 0, 1);
+      target = clamp(depth * (0.45 + 0.55 * line), 0, 1);
+    }
+  }
+  r.draft = damp(r.draft, target, 4.2, dt);
+  if (r.draft < 0.015) r.draft = 0;
+  const active = r.draft > 0.08;
+  if (active && !r.draftWas && r.draftMsgCd <= 0) {
+    r.draftMsgCd = 4;
+    audio.noiseBurst(0.38, 0.09, 1700, 'bandpass');
+    popup('尾流 / SLIPSTREAM', 'gold');
+  }
+  r.draftWas = active;
+}
+
 /* ----------------------------- 战斗 / 结算 ----------------------------- */
 function updateBattle(dt) {
   const p = race.player, rv = race.rival;
@@ -1366,6 +1412,7 @@ function updateRace(dt) {
 
   updatePlayer(dt);
   updateRival(dt);
+  updateDraft(dt);
   updateTrafficList(r.traffic, r.player.s, dt);
   updateBattle(dt);
   updateStory(dt);
@@ -1442,6 +1489,8 @@ function completeRace(win, reason) {
   uiTime = 0;
   UI.centerMessage.classList.remove('show');
   hideStoryBox();
+  UI.draftHud.classList.remove('on');
+  UI.draftGlow.classList.remove('on');
   showMessage(
     r.secret ? '追走战 // CHASE BATTLE' : win ? 'WANGAN BATTLE // WIN' : 'WANGAN BATTLE // LOSE',
     win ? 'WIN' : 'LOSE',
@@ -3672,6 +3721,11 @@ function updateHud(dt) {
   const inBattle = race.battle > 0.025 && !race.over;
   UI.spBattleTag.classList.toggle('on', inBattle || race.secret);
   UI.battleGlow.classList.toggle('on', inBattle);
+  const drafting = !!race.secret && !race.over && race.draft > 0.04;
+  UI.draftHud.classList.toggle('on', drafting);
+  UI.draftHud.setAttribute('aria-hidden', String(!drafting));
+  UI.draftFill.style.width = (clamp(race.draft || 0, 0, 1) * 100).toFixed(0) + '%';
+  UI.draftGlow.classList.toggle('on', drafting);
   UI.comboHud.classList.toggle('on', p.combo > 0);
   UI.comboVal.textContent = p.combo;
 

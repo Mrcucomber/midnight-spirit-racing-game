@@ -73,6 +73,7 @@
 - 选择 DEVIL Z 时，追走战对手为 **BLACKWING**
 - 选择 BLACKWING 时，追走战对手切换为 **DEVIL Z**
 - 关卡为 **4.0 KM 追走战**：玩家从目标车后方起跑，追走至终点
+- **尾流加速**：追走中若我方落后并贴近前车尾部，会进入尾流区，获得额外加速、极速和氮气回复；仪表右下方会亮起 `SLIPSTREAM / 尾流` 指示
 - 画面顶部会出现《湾岸 Midnight》风格的剧情对话框，交替显示两名车手的台词；选择哪台车，就以哪位车手的视角说话
 - 所有交通车辆默认取消碰撞箱，可从车流中直接穿过；秘密菜单内可用 **「其他车辆碰撞箱」** 开关切换回实体碰撞（开启后仍保持 SP 锁定）
 - 玩家 SP 锁定为满值，不再受到撞车 / 刮墙伤害
@@ -84,6 +85,8 @@
 ![秘密车辆选择](screenshots/secret-menu.png)
 
 ![DEVIL Z 追走战](screenshots/secret-race.png)
+
+![追走尾流加速](screenshots/secret-slipstream.png)
 
 ![BLACKWING 追走战](screenshots/secret-blackwing.png)
 
